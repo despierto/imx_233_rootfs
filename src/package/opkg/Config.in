@@ -1,0 +1,6 @@
+config BR2_PACKAGE_OPKG
+	bool "opkg"
+	help
+	  The Package Installer from openmoko
+
+

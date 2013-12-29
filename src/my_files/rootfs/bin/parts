@@ -1,0 +1,86 @@
+#!/bin/sh
+
+
+if [ -z $1 ]; then
+echo -e "\033[1mUsage: ./part disk_name [image.sb] [fs_type]\033[0m"
+exit
+fi
+
+
+#tftp -g -b 4096 -r "$2" 192.168.0.2
+
+if [ ! -b "$1" ]; then
+echo -e "\033[1mError: $1 disk not found\033[0m"
+exit
+fi
+
+#if [[ "$1" =~ mmc ]]; then
+p="p"
+#fi
+
+umount ${1}${p}
+
+dd if=/dev/zero of=$1 bs=512 count=1
+
+sfdisk --force -uM $1 << EOF
+,16,0x53
+,,83
+EOF
+
+if [ ! -b "${1}${p}1" ]; then
+echo -e "\033[1mError: partition ${1}${p}1 not found\033[0m"
+exit
+fi
+
+if [ ! -b "${1}${p}2" ]; then
+echo -e "\033[1mError: partition ${1}${p}2 not found\033[0m"
+exit
+fi
+
+if [ -n "$2" ]; then
+echo -e "\033[1mWriting image $2 to partition ${1}${p}1 ...\033[0m"
+dd if=/dev/zero of=${1}${p}1 bs=512 count=4
+dd if=$2 of=${1}${p}1 bs=512 seek=4 conv=sync,notrunc
+else
+exit
+fi
+
+if [ -n "$3" ]; then
+echo -e "\033[1mMake $3 fs on ${1}${p}2 ...\033[0m"
+#mkfs_ext2 -t $3 ${1}${p}2
+mkfs.ext2  ${1}${p}2
+fi
+
+echo "Copy root FS to SD/MMC card ..."
+cd /mnt/mmcblk0p2
+mkdir ./bin
+mkdir ./dev
+mkdir ./etc
+mkdir ./home
+mkdir ./lib
+mkdir ./root
+mkdir ./proc
+mkdir ./tmp
+mkdir ./sys
+mkdir ./mnt
+mkdir ./mnt/www
+mkdir ./mnt/nand
+mkdir ./sbin
+mkdir ./usr
+mkdir ./var
+
+cp -r /bin/* /mnt/mmcblk0p2/bin
+
+cp -r /dev/* /mnt/mmcblk0p2/dev
+cp -r /etc/* /mnt/mmcblk0p2/etc
+cp -r /home/* /mnt/mmcblk0p2/home
+cp -r /lib/* /mnt/mmcblk0p2/lib
+cp -r /mnt/www/* /mnt/mmcblk0p2/mnt/www
+cp -r /root/* /mnt/mmcblk0p2/root
+cp -r /sbin/* /mnt/mmcblk0p2/sbin
+cp -r /usr/* /mnt/mmcblk0p2/usr
+cp -r /var/* /mnt/mmcblk0p2/var
+cp -r /linuxrc /mnt/mmcblk0p2/linuxrc
+cp -r /init /mnt/mmcblk0p2/init
+
+echo "Now You can close J6,J7,J8 and reboot the system."

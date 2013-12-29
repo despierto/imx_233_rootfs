@@ -1,0 +1,5 @@
+config BR2_PACKAGE_KOBS
+	bool "kobs"
+	help
+            Writes i.MX233-style boot streams to a NAND Flash medium
+            

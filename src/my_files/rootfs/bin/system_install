@@ -1,0 +1,5 @@
+#!/bin/sh
+nand_ubi_format
+nand_tftp_update
+#kobs-ng -d /mnt/sda1/linux.sb
+#reboot

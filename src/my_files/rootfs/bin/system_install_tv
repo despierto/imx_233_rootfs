@@ -1,0 +1,6 @@
+#!/bin/sh
+nand_ubi_format
+#nand_tftp_update
+tftp -g -b 4096 -r linux_tv.sb 192.168.0.2
+kobs-ng -d ./linux_tv.sb
+reboot
